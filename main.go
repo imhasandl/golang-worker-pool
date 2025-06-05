@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"sync"
 	"time"
@@ -92,9 +93,13 @@ func (wp *WorkerPool) WorkerCount() int {
 }
 
 func main() {
-	pool := NewWorkerPool(10)
+	numWorkers := flag.Int("workers", 10, "Number of workers in the pool")
+	numTasks := flag.Int("tasks", 50, "Number of tasks to process")
+	flag.Parse()
 
-	for i := 1; i <= 10; i++ {
+	pool := NewWorkerPool(*numWorkers)
+
+	for i := 1; i <= *numWorkers; i++ {
 		pool.AddWorker()
 	}
 	fmt.Printf("Starting with %d workers\n", pool.WorkerCount())
@@ -112,7 +117,7 @@ func main() {
 		}
 	})
 
-	for i := 1; i <= 50; i++ {
+	for i := 1; i <= *numTasks; i++ {
 		pool.jobs <- fmt.Sprintf("job-%d", i)
 		time.Sleep(time.Millisecond * 500)
 	}
