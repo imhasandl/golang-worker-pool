@@ -92,5 +92,31 @@ func (wp *WorkerPool) WorkerCount() int {
 }
 
 func main() {
+	pool := NewWorkerPool(10)
 
+	for i := 1; i <= 10; i++ {
+		pool.AddWorker()
+	}
+	fmt.Printf("Starting with %d workers\n", pool.WorkerCount())
+
+	time.AfterFunc(time.Second * 3, func() {
+		id := pool.AddWorker()
+		fmt.Printf("Added worker %d, total workers: %d\n", id, pool.WorkerCount())
+	})
+
+	time.AfterFunc(time.Second * 5, func() {
+		if pool.WorkerCount() > 0 {
+			if pool.RemoveWorker(1) {
+				fmt.Printf("Removed worker 1, total workers: %d\n", pool.WorkerCount())
+			}
+		}
+	})
+
+	for i := 1; i <= 50; i++ {
+		pool.jobs <- fmt.Sprintf("job-%d", i)
+		time.Sleep(time.Millisecond * 500)
+	}
+
+	pool.Close()
+	fmt.Println("Finish")
 }
